@@ -1,0 +1,63 @@
+# Emoji Kitchen changes — 2026-06-05
+
+**Summary:** Since the 2026-05-29 snapshot, Google's Emoji Kitchen gained **0** combos, dropped **4**, and redrew **43** existing ones. It now offers **147,000** combos across **619** emoji. Sticker batch: 20260429.
+
+## New combos (0)
+
+None.
+
+## Removed combos (4)
+
+- 👗 + 🌺 — dress + hibiscus · last seen in batch 20251029
+- 👗 + 🍋 — dress + lemon · last seen in batch 20251029
+- 👗 + 🍍 — dress + pineapple · last seen in batch 20251029
+- 👗 + ⏰ — dress + alarm clock · last seen in batch 20251029
+
+## Redrawn combos (43)
+
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f621/u1f621_u1f198.png" width="40" alt=""> 😡 + 🆘 — rage + sos · batch 20250130 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f621/u1f621_u1f198.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f308.png" width="40" alt=""> 🌟 + 🌈 — star2 + rainbow · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f308.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f30d.png" width="40" alt=""> 🌟 + 🌍 — star2 + earth africa · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f30d.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f31c.png" width="40" alt=""> 🌟 + 🌜 — star2 + last quarter moon with face · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f31c.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f32a-ufe0f.png" width="40" alt=""> 🌟 + 🌪️ — star2 + tornado · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f32a-ufe0f.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f32d.png" width="40" alt=""> 🌟 + 🌭 — star2 + hotdog · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f32d.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f332.png" width="40" alt=""> 🌟 + 🌲 — star2 + evergreen tree · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f332.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f336-ufe0f.png" width="40" alt=""> 🌟 + 🌶️ — star2 + hot pepper · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f336-ufe0f.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f33c.png" width="40" alt=""> 🌟 + 🌼 — star2 + blossom · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f33c.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f34d.png" width="40" alt=""> 🌟 + 🍍 — star2 + pineapple · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f34d.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f37d-ufe0f.png" width="40" alt=""> 🌟 + 🍽️ — star2 + knife fork plate · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f37d-ufe0f.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f382.png" width="40" alt=""> 🌟 + 🎂 — star2 + birthday · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f382.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f383.png" width="40" alt=""> 🌟 + 🎃 — star2 + jack o lantern · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f383.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f388.png" width="40" alt=""> 🌟 + 🎈 — star2 + balloon · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f388.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f38a.png" width="40" alt=""> 🌟 + 🎊 — star2 + confetti ball · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f38a.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f441-ufe0f.png" width="40" alt=""> 🌟 + 👁️ — star2 + eye · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f441-ufe0f.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f451.png" width="40" alt=""> 🌟 + 👑 — star2 + crown · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f451.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f48e.png" width="40" alt=""> 🌟 + 💎 — star2 + gem · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f48e.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f490.png" width="40" alt=""> 🌟 + 💐 — star2 + bouquet · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f490.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f4f0.png" width="40" alt=""> 🌟 + 📰 — star2 + newspaper · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f4f0.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f525.png" width="40" alt=""> 🌟 + 🔥 — star2 + fire · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f525.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f52e.png" width="40" alt=""> 🌟 + 🔮 — star2 + crystal ball · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f52e.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f573-ufe0f.png" width="40" alt=""> 🌟 + 🕳️ — star2 + hole · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f573-ufe0f.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f577-ufe0f.png" width="40" alt=""> 🌟 + 🕷️ — star2 + spider · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f577-ufe0f.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f648.png" width="40" alt=""> 🌟 + 🙈 — star2 + see no evil · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f648.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f951.png" width="40" alt=""> 🌟 + 🥑 — star2 + avocado · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f951.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f972.png" width="40" alt=""> 🌟 + 🥲 — star2 + smiling face with tear · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f972.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f978.png" width="40" alt=""> 🌟 + 🥸 — star2 + disguised face · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f978.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f981.png" width="40" alt=""> 🌟 + 🦁 — star2 + lion face · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f981.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f9a0.png" width="40" alt=""> 🌟 + 🦠 — star2 + microbe · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f9a0.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f9a5.png" width="40" alt=""> 🌟 + 🦥 — star2 + sloth · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f9a5.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f9c0.png" width="40" alt=""> 🌟 + 🧀 — star2 + cheese wedge · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f9c0.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f9c1.png" width="40" alt=""> 🌟 + 🧁 — star2 + cupcake · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u1f9c1.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u2601-ufe0f.png" width="40" alt=""> 🌟 + ☁️ — star2 + cloud · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u2601-ufe0f.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u2615.png" width="40" alt=""> 🌟 + ☕ — star2 + coffee · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u2615.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u26c4.png" width="40" alt=""> 🌟 + ⛄ — star2 + snowman without snow · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u26c4.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u2b50.png" width="40" alt=""> 🌟 + ⭐ — star2 + star · batch 20201001 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f31f/u1f31f_u2b50.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f32c-ufe0f/u1f32c-ufe0f_u1f4e3.png" width="40" alt=""> 🌬️ + 📣 — wind blowing face + mega · batch 20241021 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f32c-ufe0f/u1f32c-ufe0f_u1f4e3.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1fae0/u1fae0_u1f4fa.png" width="40" alt=""> 🫠 + 📺 — melting face + tv · batch 20240530 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1fae0/u1fae0_u1f4fa.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f514/u1f514_u1f6b2.png" width="40" alt=""> 🔔 + 🚲 — bell + bike · batch 20240530 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f514/u1f514_u1f6b2.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f984/u1f984_u1f642-u200d-u2195-ufe0f.png" width="40" alt=""> 🦄 + 🙂‍↕️ — unicorn face + head shaking vertically · batch 20260128 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f984/u1f984_u1f642-u200d-u2195-ufe0f.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f971/u1f971_u1fa7a.png" width="40" alt=""> 🥱 + 🩺 — yawning face + stethoscope · batch 20241021 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1f971/u1f971_u1fa7a.png)
+- <img src="https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1faa9/u1faa9_u1faa9.png" width="40" alt=""> 🪩 + 🪩 — mirror ball + mirror ball · batch 20240530 → 20260429 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260429/u1faa9/u1faa9_u1faa9.png)
+
+---
+Data: emojikitchen.dev's scan of Google's sticker server ([upstream commits](https://github.com/xsalazar/emoji-kitchen-backend/commits/main/app/metadata.json)). Combos are unordered emoji pairs; 'redrawn' means Google published a newer version of an existing sticker.

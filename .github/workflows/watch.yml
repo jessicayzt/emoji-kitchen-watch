@@ -1,0 +1,83 @@
+name: Emoji Kitchen watch
+
+on:
+  schedule:
+    - cron: "23 14 * * 1"   # Mondays 14:23 UTC (an off-the-hour minute avoids GitHub's busiest cron slots)
+  workflow_dispatch:         # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write            # commit the updated snapshot + report
+  issues: write              # open the changelog issue
+
+concurrency:
+  group: emoji-kitchen-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # `secrets` can't be used in `if:` conditions, so mirror the one we test into env.
+      SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Download upstream metadata.json (~95 MB)
+        run: |
+          curl -sSL --compressed --retry 3 --retry-delay 15 \
+            -o metadata.json \
+            https://raw.githubusercontent.com/xsalazar/emoji-kitchen-backend/main/app/metadata.json
+          python -c "import json; json.load(open('metadata.json'))" || { echo "::error::metadata.json is not valid JSON"; exit 1; }
+
+      - name: Diff against the previous snapshot
+        id: diff
+        run: python watch.py metadata.json
+
+      - name: Commit snapshot and report
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p reports   # doesn't exist yet on the baseline run
+          git add snapshot reports
+          if git diff --cached --quiet; then
+            echo "Snapshot unchanged; nothing to commit."
+            exit 0
+          fi
+          git commit -m "${{ steps.diff.outputs.subject }}"
+          git push
+
+      # ---- Notification 1: email via SMTP (runs only if SMTP secrets are configured) ----
+      - name: Email the newsletter
+        if: steps.diff.outputs.changed == 'true' && env.SMTP_SERVER != ''
+        uses: dawidd6/action-send-mail@v22
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT || 465 }}
+          require_tls: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          from: ${{ secrets.MAIL_FROM || secrets.SMTP_USERNAME }}
+          to: ${{ secrets.MAIL_TO }}
+          subject: ${{ steps.diff.outputs.subject }}
+          html_body: file://out/newsletter.html
+          attachments: ${{ steps.diff.outputs.report }}
+
+      # ---- Notification 2: open a GitHub issue; GitHub emails the assignee (no SMTP needed) ----
+      - name: Open changelog issue
+        if: steps.diff.outputs.changed == 'true' && vars.OPEN_ISSUE != 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSIGNEE: ${{ vars.ISSUE_ASSIGNEE || github.repository_owner }}
+        run: |
+          gh issue create \
+            --title "${{ steps.diff.outputs.subject }}" \
+            --body-file out/newsletter.md \
+            --assignee "$ASSIGNEE"
