@@ -674,6 +674,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     args.out_dir.mkdir(parents=True, exist_ok=True)
     args.reports_dir.mkdir(parents=True, exist_ok=True)
     report_path = args.reports_dir / f"{today}.md"
+    n = 1
+    while report_path.exists():          # a second run with changes on the same day must not overwrite the first report
+        n += 1
+        report_path = args.reports_dir / f"{today}-{n}.md"
     report_rel = report_path.as_posix()
     report_url = args.report_url or report_link(report_rel)
 

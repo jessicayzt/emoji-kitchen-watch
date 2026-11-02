@@ -59,7 +59,7 @@ gap, so the first run after switching reports that backlog as new.
 | `snapshot/combos.tsv` | Last known state: one line per combo (`date  left  right`, ~3 MB, sorted so each weekly commit is a readable diff). `date` is the gstatic folder holding the sticker; empty until it has been located |
 | `snapshot/emoji.tsv` | Codepoint → name for every supported emoji (used to name combos that disappear) |
 | `snapshot/meta.json` | When the snapshot last changed, its counts, the pair-list version it came from, and every sticker folder seen so far |
-| `reports/YYYY-MM-DD.md` | Full, uncapped report for each week that had changes (permanent changelog) |
+| `reports/YYYY-MM-DD.md` | Full, uncapped report for each run that had changes (permanent changelog); a second run with changes on the same day writes `YYYY-MM-DD-2.md` |
 | `out/` | The newsletter for the current run (Markdown + HTML); not committed |
 
 ## Setup
@@ -176,9 +176,12 @@ flow that forwards to email — can be wired in the same way, using
   the `sweep` input set to one or more folders (`20260728,20260428`), or locally
   `python watch.py --sweep 20260728`. A sweep makes two HEAD requests per combo
   per folder (about 300,000 for the full catalogue), which is why it is not
-  part of the weekly run. The newsletter tells you when a new folder appeared,
-  so you know when a sweep is worth running. After switching from emojikitchen.dev
-  the folders `20250728`, `20260428` and `20260728` have never been swept.
+  part of the weekly run. One folder takes about 7 minutes on a GitHub
+  runner and three took 22 minutes against the job's 30-minute limit, so
+  sweep at most two or three folders per run. The newsletter tells you when
+  a new folder appeared, so you know when a sweep is worth running. The
+  folders `20250728`, `20260428` and `20260728` were swept on 2026-11-02
+  (23 redrawn combos).
 - Google refreshes the pair list every three to six months, so most weeks the
   run finishes with "No changes" and sends nothing.
 

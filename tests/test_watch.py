@@ -232,6 +232,16 @@ class EndToEndTests(unittest.TestCase):
         # sorted by pair; left/right keep the order Google uses in the file name
         self.assertEqual(combos, ["date\tleft\tright", "20260429\t1f31f\t1f9a5", "20260728\t1f418\t1f418", "20260428\t1fa77\t1f9a5"])
 
+    def test_second_run_with_changes_on_the_same_day_keeps_both_reports(self):
+        watch.main(self.argv)
+        first = (self.tmp / "reports" / "2026-11-03.md").read_text(encoding="utf-8")
+        combos = (self.snap / "combos.tsv").read_text(encoding="utf-8").splitlines()
+        (self.snap / "combos.tsv").write_text("\n".join(l for l in combos if "1f418" not in l) + "\n", encoding="utf-8")
+        self.assertEqual(watch.main(self.argv), 0)   # the elephant combo looks new again
+        self.assertEqual(sorted(p.name for p in (self.tmp / "reports").iterdir()), ["2026-11-03-2.md", "2026-11-03.md"])
+        self.assertEqual((self.tmp / "reports" / "2026-11-03.md").read_text(encoding="utf-8"), first)
+        self.assertIn("gained **1** combos", (self.tmp / "reports" / "2026-11-03-2.md").read_text(encoding="utf-8"))
+
     def test_baseline_run_without_snapshot(self):
         for f in self.snap.iterdir():
             f.unlink()
