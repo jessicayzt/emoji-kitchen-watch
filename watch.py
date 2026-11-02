@@ -442,7 +442,8 @@ def footer_text(d: Diff) -> str:
             "Combos are unordered emoji pairs; 'redrawn' means a newer dated folder now holds the sticker (found by a folder sweep).")
 
 
-def render_markdown(d: Diff, since: str | None, today: str, max_inline: int | None, thumbs: bool, full_report: str | None) -> str:
+def render_markdown(d: Diff, since: str | None, today: str, max_inline: int | None, thumbs: bool, full_report: str | None,
+                    report_url: str | None = None) -> str:
     out = [f"# Emoji Kitchen changes — {today}", "", f"**Summary:** {summary_text(d, since, today)}", ""]
 
     def section(title: str, keys: list[PairKey], source: dict[PairKey, Combo], removed: bool = False, redraw: bool = False):
@@ -467,8 +468,12 @@ def render_markdown(d: Diff, since: str | None, today: str, max_inline: int | No
             batch = f"batch {d.prev[k][0]} → {date}" if redraw else f"batch {date}"
             out.append(f"- {thumb}{glyphs} — {names} · {batch} · [png]({url})")
         if len(shown) < len(keys):
-            more = f"… and {fmt(len(keys) - len(shown))} more"
-            out.append(f"- {more} — see the full report" + (f" (`{full_report}`)" if full_report else "") + ".")
+            more = f"… and {fmt(len(keys) - len(shown))} more — see the "
+            if report_url:
+                more += f"[full report]({report_url})"
+            else:
+                more += "full report" + (f" (`{full_report}`)" if full_report else "")
+            out.append(f"- {more}.")
         out.append("")
 
     section("New combos", d.added, d.cur)
@@ -480,7 +485,8 @@ def render_markdown(d: Diff, since: str | None, today: str, max_inline: int | No
     return "\n".join(out) + "\n"
 
 
-def render_html(d: Diff, since: str | None, today: str, max_inline: int | None, full_report: str | None) -> str:
+def render_html(d: Diff, since: str | None, today: str, max_inline: int | None, full_report: str | None,
+                report_url: str | None = None) -> str:
     esc = html.escape
     summary = esc(summary_text(d, since, today)).replace("**", "").replace("`", "")  # markdown markers -> plain
     css = ("body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#222;max-width:720px;margin:0 auto;padding:16px}"
@@ -514,8 +520,12 @@ def render_html(d: Diff, since: str | None, today: str, max_inline: int | None, 
             out.append(f"<tr><td>{img}</td><td class='g'>{esc(glyphs)}</td><td class='n'>{esc(names)}</td><td class='b'>{batch}</td></tr>")
         out.append("</table>")
         if len(shown) < len(keys):
-            out.append(f"<p class='more'>… and {fmt(len(keys) - len(shown))} more — the full list is attached"
-                       + (f" (<code>{esc(full_report)}</code>)" if full_report else "") + ".</p>")
+            rest = f"… and {fmt(len(keys) - len(shown))} more — "
+            if report_url:
+                rest += f"see the <a href='{esc(report_url)}'>full report</a> (also attached)"
+            else:
+                rest += "the full list is attached" + (f" (<code>{esc(full_report)}</code>)" if full_report else "")
+            out.append(f"<p class='more'>{rest}.</p>")
 
     section("New combos", d.added, d.cur)
     section("Removed combos", d.removed, d.prev, removed=True)
@@ -527,6 +537,14 @@ def render_html(d: Diff, since: str | None, today: str, max_inline: int | None, 
 
 
 # --------------------------------------------------------------------------- GitHub Actions plumbing
+def report_link(report_rel: str) -> str | None:
+    """URL of the committed report on GitHub when running inside Actions (the commit step pushes it before the issue opens)."""
+    repo, ref = os.environ.get("GITHUB_REPOSITORY"), os.environ.get("GITHUB_REF_NAME")
+    if not repo or not ref:
+        return None
+    return f"{os.environ.get('GITHUB_SERVER_URL') or 'https://github.com'}/{repo}/blob/{ref}/{report_rel}"
+
+
 def gh_output(**kv: str) -> None:
     path = os.environ.get("GITHUB_OUTPUT")
     if not path:
@@ -557,6 +575,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap.add_argument("--reports-dir", type=Path, default=Path("reports"), help="full, uncapped Markdown reports (committed)")
     ap.add_argument("--out-dir", type=Path, default=Path("out"), help="newsletter.md / newsletter.html for this run")
     ap.add_argument("--max-inline", type=int, default=100, help="combos listed per section in the newsletter (rest go to the report)")
+    ap.add_argument("--report-url", help="link to the committed full report, used by the newsletter's 'and N more' line "
+                                         "(default: built from GITHUB_SERVER_URL / GITHUB_REPOSITORY / GITHUB_REF_NAME inside Actions)")
     ap.add_argument("--date", default=dt.date.today().isoformat(), help="override today's date (YYYY-MM-DD)")
     args = ap.parse_args(argv)
 
@@ -655,11 +675,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     args.reports_dir.mkdir(parents=True, exist_ok=True)
     report_path = args.reports_dir / f"{today}.md"
     report_rel = report_path.as_posix()
+    report_url = args.report_url or report_link(report_rel)
 
     report_path.write_text(render_markdown(d, since, today, max_inline=None, thumbs=False, full_report=None), encoding="utf-8")
-    newsletter_md = render_markdown(d, since, today, args.max_inline, thumbs=True, full_report=report_rel)
+    newsletter_md = render_markdown(d, since, today, args.max_inline, thumbs=True, full_report=report_rel, report_url=report_url)
     (args.out_dir / "newsletter.md").write_text(newsletter_md, encoding="utf-8")
-    (args.out_dir / "newsletter.html").write_text(render_html(d, since, today, args.max_inline, report_rel), encoding="utf-8")
+    (args.out_dir / "newsletter.html").write_text(render_html(d, since, today, args.max_inline, report_rel, report_url=report_url),
+                                                  encoding="utf-8")
 
     meta["updated"] = today
     save_snapshot(args.snapshot_dir, cur_names, cur_combos, meta)

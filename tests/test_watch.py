@@ -1,8 +1,10 @@
 """Offline tests for watch.py.  Run:  python -m unittest discover -s tests -v"""
 import json
+import os
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -148,6 +150,32 @@ class DiffTests(unittest.TestCase):
         self.assertEqual(d.removed, [("a", "b")])
         self.assertEqual(d.emoji_added, [ELEPHANT])
         self.assertTrue(d.any())
+
+
+class RenderTests(unittest.TestCase):
+    def setUp(self):
+        cur = {(STAR, SLOTH): ("20260728", STAR, SLOTH), (ELEPHANT, ELEPHANT): ("20260728", ELEPHANT, ELEPHANT)}
+        self.d = watch.Diff({}, {}, {}, cur)
+
+    def test_more_line_links_to_the_committed_report(self):
+        url = "https://github.com/o/r/blob/main/reports/2026-11-03.md"
+        md = watch.render_markdown(self.d, None, "2026-11-03", max_inline=1, thumbs=False, full_report="reports/2026-11-03.md", report_url=url)
+        self.assertIn(f"- … and 1 more — see the [full report]({url}).", md)
+        html_out = watch.render_html(self.d, None, "2026-11-03", max_inline=1, full_report="reports/2026-11-03.md", report_url=url)
+        self.assertIn(f"see the <a href='{url}'>full report</a> (also attached).", html_out)
+
+    def test_more_line_without_a_url_names_the_file(self):
+        md = watch.render_markdown(self.d, None, "2026-11-03", max_inline=1, thumbs=False, full_report="reports/2026-11-03.md")
+        self.assertIn("- … and 1 more — see the full report (`reports/2026-11-03.md`).", md)
+        html_out = watch.render_html(self.d, None, "2026-11-03", max_inline=1, full_report="reports/2026-11-03.md")
+        self.assertIn("the full list is attached (<code>reports/2026-11-03.md</code>).", html_out)
+
+    def test_report_link_comes_from_the_actions_environment(self):
+        env = {"GITHUB_SERVER_URL": "https://github.com", "GITHUB_REPOSITORY": "o/r", "GITHUB_REF_NAME": "main"}
+        with unittest.mock.patch.dict(os.environ, env, clear=True):
+            self.assertEqual(watch.report_link("reports/2026-11-03.md"), "https://github.com/o/r/blob/main/reports/2026-11-03.md")
+        with unittest.mock.patch.dict(os.environ, {}, clear=True):
+            self.assertIsNone(watch.report_link("reports/2026-11-03.md"))
 
 
 class EndToEndTests(unittest.TestCase):

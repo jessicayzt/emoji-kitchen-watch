@@ -199,4 +199,6 @@ flow that forwards to email — can be wired in the same way, using
 - The commit step needs push access to the default branch; if you protect the
   branch, allow the `github-actions[bot]` to bypass or push to a side branch.
 - Issue bodies are limited to 65,536 characters, which is why the newsletter is
-  capped and the full list lives in `reports/`.
+  capped at 100 combos per section and the full list lives in `reports/`; the
+  "and N more" line links to that file on GitHub (the report is committed and
+  pushed before the issue is opened).
