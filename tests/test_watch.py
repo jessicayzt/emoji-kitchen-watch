@@ -152,6 +152,52 @@ class DiffTests(unittest.TestCase):
         self.assertTrue(d.any())
 
 
+class GroupingTests(unittest.TestCase):
+    TULIP, CROISSANT = "1f337", "1f950"
+
+    def test_greedy_groups_and_partner_order(self):
+        keys = [(self.TULIP, ELEPHANT), (ELEPHANT, self.CROISSANT), (ELEPHANT, ELEPHANT), (ELEPHANT, SLOTH), (SLOTH, PINK_HEART), (STAR, SLOTH)]
+        groups = watch.group_by_emoji(keys)
+        self.assertEqual([cp for cp, _ in groups], [ELEPHANT, SLOTH])
+        self.assertEqual(groups[0][1], [(ELEPHANT, ELEPHANT), (self.TULIP, ELEPHANT), (ELEPHANT, self.CROISSANT), (ELEPHANT, SLOTH)])  # self first, then by partner
+        self.assertEqual(groups[1][1], [(STAR, SLOTH), (SLOTH, PINK_HEART)])          # the shared elephant+sloth pair was taken by the bigger group
+        self.assertEqual(sum(len(m) for _, m in groups), len(keys))                  # every pair exactly once
+
+    def test_singletons_are_pooled(self):
+        keys = [(STAR, SLOTH), (ELEPHANT, ELEPHANT), (self.TULIP, PINK_HEART), (self.TULIP, SLOTH)]
+        groups = watch.group_by_emoji(keys)
+        self.assertEqual([cp for cp, _ in groups], [self.TULIP, None])
+        self.assertEqual(groups[1][1], [(STAR, SLOTH), (ELEPHANT, ELEPHANT)])   # pooled pairs keep plain sorted order
+
+    def test_layout_spreads_the_newsletter_cap_over_groups(self):
+        keys = [(ELEPHANT, f"1f{i:03x}") for i in range(12)] + [(SLOTH, f"1e{i:03x}") for i in range(3)]
+        groups, printed, hidden = watch.layout(keys, max_inline=7)
+        self.assertEqual([(cp, len(m), len(s)) for cp, m, s in printed], [(ELEPHANT, 12, 5), (SLOTH, 3, 2)])  # 5 per group, then the room left
+        self.assertEqual(hidden, 8)
+        self.assertEqual(watch.layout(keys, None)[2], 0)
+
+    def test_markdown_groups_with_headings_and_overview(self):
+        cur = {(self.TULIP, ELEPHANT): ("20260728", self.TULIP, ELEPHANT), (ELEPHANT, self.CROISSANT): ("20260728", ELEPHANT, self.CROISSANT),
+               (STAR, SLOTH): ("20260728", STAR, SLOTH)}
+        d = watch.Diff({}, {}, {ELEPHANT: "elephant", self.TULIP: "tulip", self.CROISSANT: "croissant", STAR: "star2", SLOTH: "sloth"}, cur)
+        md = watch.render_markdown(d, None, "2026-11-03", max_inline=None, thumbs=False, full_report=None)
+        self.assertIn("**By emoji:** 🐘 elephant (2); 1 other combo.", md)
+        self.assertIn("### 🐘 elephant (2)\n\n- 🐘 + 🌷 — elephant + tulip · batch 20260728 · [png](https://www.gstatic.com/android/keyboard/emojikitchen/20260728/u1f337/u1f337_u1f418.png)\n"
+                      "- 🐘 + 🥐 — elephant + croissant · batch 20260728", md)                   # lead emoji first, URL keeps Google's order
+        self.assertIn("### Other combos (1)\n\n- 🌟 + 🦥 — star2 + sloth", md)
+        html_out = watch.render_html(d, None, "2026-11-03", max_inline=None, full_report=None)
+        self.assertIn("<h3>🐘 elephant (2)</h3>", html_out)
+        self.assertIn("<b>By emoji:</b> 🐘 elephant (2); 1 other combo.", html_out)
+
+    def test_truncated_group_says_how_many_more(self):
+        cur = {(ELEPHANT, f"1f{i:03x}"): ("20260728", ELEPHANT, f"1f{i:03x}") for i in range(8)}
+        cur[(STAR, SLOTH)] = ("20260728", STAR, SLOTH)
+        d = watch.Diff({}, {}, {ELEPHANT: "elephant"}, cur)
+        md = watch.render_markdown(d, None, "2026-11-03", max_inline=6, thumbs=False, full_report="r.md")
+        self.assertIn("- … 3 more with 🐘\n", md)
+        self.assertIn("- … and 3 more — see the full report (`r.md`).", md)
+
+
 class RenderTests(unittest.TestCase):
     def setUp(self):
         cur = {(STAR, SLOTH): ("20260728", STAR, SLOTH), (ELEPHANT, ELEPHANT): ("20260728", ELEPHANT, ELEPHANT)}

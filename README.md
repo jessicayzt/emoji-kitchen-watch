@@ -26,17 +26,26 @@ emoji. Newly supported emoji: 🦨 skunk. Sticker batch: 20260128. Source: Googl
 pair list v13 (last modified Tue, 01 Sep 2026 19:30:00 GMT).
 
 New combos (616)
-  🦨 + 🃏 — skunk + black joker · batch 20260128
-  🦨 + 🆒 — skunk + cool · batch 20260128
-  …
+  By emoji: 🦨 skunk (616).
+
+  🦨 skunk (616)
+    🦨 + 🃏 — skunk + black joker · batch 20260128
+    🦨 + 🆒 — skunk + cool · batch 20260128
+    …
 
 Removed combos (4)
-  👗 + 🌺 — dress + hibiscus · last seen in batch 20251029
-  …
+  By emoji: 👗 dress (4).
+
+  👗 dress (4)
+    👗 + 🌺 — dress + hibiscus · last seen in batch 20251029
+    …
 
 Redrawn combos (42)
-  🌟 + 🥑 — star2 + avocado · batch 20201001 → 20260429
-  …
+  By emoji: 🌟 star2 (36); 6 other combos.
+
+  🌟 star2 (36)
+    🌟 + 🥑 — star2 + avocado · batch 20201001 → 20260429
+    …
 ```
 
 The HTML email shows a thumbnail of every new/redrawn sticker (the images are
@@ -160,6 +169,12 @@ flow that forwards to email — can be wired in the same way, using
 - A **combo** is an unordered pair of emoji codepoints. **New** = pair present
   now, absent last week. **Removed** = the reverse: Google took it out of the
   list, and in the cases checked so far the PNG disappears too.
+- **Grouping.** Each section lists every combo once, grouped under the emoji
+  with the most changes (greedily: the busiest emoji takes all its pairs, then
+  the next), with a "By emoji" overview at the top. Pairs whose two emoji each
+  have only one change are pooled under "Other combos". The newsletter
+  spreads its 100-line cap over the groups (at most 10 lines per emoji) so one
+  big batch does not hide the rest; the full report prints everything.
 - The summary also calls out emoji that gained or lost Emoji Kitchen support
   entirely. New emoji are named from the Unicode database (`🐘` → `elephant`);
   names from the old emojikitchen.dev data are kept for everything else.

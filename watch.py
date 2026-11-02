@@ -43,6 +43,7 @@ import time
 import unicodedata
 import urllib.error
 import urllib.request
+from collections import Counter
 from collections.abc import Iterable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -393,13 +394,15 @@ class Diff:
     def name(self, cp: str) -> str:
         return self.names.get(cp) or "U+" + cp.upper().replace("-", " U+")
 
-    def label(self, combo: Combo) -> tuple[str, str]:
-        """('🌟 + 🥑', 'glowing star + avocado')"""
+    def label(self, combo: Combo, lead: str | None = None) -> tuple[str, str]:
+        """('🌟 + 🥑', 'glowing star + avocado'); with `lead`, that emoji is shown first (the sticker URL keeps Google's order)."""
         _, left, right = combo
+        if lead is not None and right == lead and left != lead:
+            left, right = right, left
         return f"{glyph(left)} + {glyph(right)}", f"{self.name(left).replace('_', ' ')} + {self.name(right).replace('_', ' ')}"
 
 
-# --------------------------------------------------------------------------- rendering
+# --------------------------------------------------------------------------- summary
 def source_text(d: Diff) -> str:
     if d.version is None:
         return ""
@@ -442,9 +445,97 @@ def footer_text(d: Diff) -> str:
             "Combos are unordered emoji pairs; 'redrawn' means a newer dated folder now holds the sticker (found by a folder sweep).")
 
 
+# --------------------------------------------------------------------------- grouping
+OVERVIEW_MAX = 40          # emoji named in a section's "By emoji" overview before "and N more emoji"
+
+
+def partner(key: PairKey, cp: str) -> str:
+    """The other emoji of a pair ("" for a self-combo, so it sorts first)."""
+    a, b = key
+    return "" if a == b else (b if a == cp else a)
+
+
+def group_by_emoji(keys: Iterable[PairKey], min_size: int = 2) -> list[tuple[str | None, list[PairKey]]]:
+    """Assign every pair to exactly one emoji so a long list reads emoji by emoji.
+
+    Greedy: the emoji with the most remaining pairs takes all of them, then repeat. Pairs whose emoji are both
+    left with fewer than `min_size` pairs are pooled at the end under a None heading ("Other combos").
+    Within a group pairs are ordered by the partner emoji, a self-combo first.
+    """
+    remaining = set(keys)
+    groups: list[tuple[str | None, list[PairKey]]] = []
+    while remaining:
+        counts: Counter[str] = Counter()
+        for a, b in remaining:
+            counts[a] += 1
+            if b != a:
+                counts[b] += 1
+        cp, n = min(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+        if n < min_size:
+            break
+        mine = sorted((k for k in remaining if cp in k), key=lambda k: partner(k, cp))
+        groups.append((cp, mine))
+        remaining.difference_update(mine)
+    if remaining:
+        groups.append((None, sorted(remaining)))
+    return groups
+
+
+def layout(keys: list[PairKey], max_inline: int | None):
+    """Plan a section: (all groups, groups to print as (emoji, members, members shown), pairs left out).
+
+    The newsletter caps a section at `max_inline` lines spread over the groups (at most max_inline // 10 per
+    group, minimum 5) so one emoji's huge batch does not crowd out the others; the full report prints everything.
+    """
+    groups = group_by_emoji(keys)
+    if max_inline is None:
+        return groups, [(cp, m, m) for cp, m in groups], 0
+    per_group, shown_total, printed = max(5, max_inline // 10), 0, []
+    for cp, members in groups:
+        room = max_inline - shown_total
+        if room <= 0:
+            break
+        shown = members[:min(per_group, room)]
+        printed.append((cp, members, shown))
+        shown_total += len(shown)
+    return groups, printed, len(keys) - shown_total
+
+
+def overview_text(d: Diff, groups) -> str | None:
+    """'🫏 donkey (611), 🐘 elephant (610), …; 12 other combos' or None when nothing is grouped."""
+    named = [(cp, m) for cp, m in groups if cp]
+    if not named:
+        return None
+    items = [f"{glyph(cp)} {d.name(cp).replace('_', ' ')} ({fmt(len(m))})" for cp, m in named]
+    text = ", ".join(items[:OVERVIEW_MAX])
+    if len(items) > OVERVIEW_MAX:
+        text += f", and {fmt(len(items) - OVERVIEW_MAX)} more emoji"
+    other = sum(len(m) for cp, m in groups if cp is None)
+    if other:
+        text += f"; {fmt(other)} other combo{'s' if other != 1 else ''}"
+    return text
+
+
+def group_heading(d: Diff, cp: str | None, members: list[PairKey]) -> str:
+    return (f"{glyph(cp)} {d.name(cp).replace('_', ' ')}" if cp else "Other combos") + f" ({fmt(len(members))})"
+
+
+# --------------------------------------------------------------------------- rendering
 def render_markdown(d: Diff, since: str | None, today: str, max_inline: int | None, thumbs: bool, full_report: str | None,
                     report_url: str | None = None) -> str:
     out = [f"# Emoji Kitchen changes — {today}", "", f"**Summary:** {summary_text(d, since, today)}", ""]
+
+    def line(k: PairKey, source: dict[PairKey, Combo], lead: str | None, removed: bool, redraw: bool) -> str:
+        date, left, right = source[k]
+        glyphs, names = d.label(source[k], lead)
+        url = sticker_url(date, left, right)
+        if removed:
+            return f"- {glyphs} — {names} · " + (f"last seen in batch {date}" if date else "sticker folder unknown")
+        if not url:
+            return f"- {glyphs} — {names} · sticker image not found yet"
+        thumb = f'<img src="{url}" width="40" alt=""> ' if thumbs else ""
+        batch = f"batch {d.prev[k][0]} → {date}" if redraw else f"batch {date}"
+        return f"- {thumb}{glyphs} — {names} · {batch} · [png]({url})"
 
     def section(title: str, keys: list[PairKey], source: dict[PairKey, Combo], removed: bool = False, redraw: bool = False):
         out.append(f"## {title} ({fmt(len(keys))})")
@@ -453,28 +544,27 @@ def render_markdown(d: Diff, since: str | None, today: str, max_inline: int | No
             out.append("None.")
             out.append("")
             return
-        shown = keys if max_inline is None else keys[:max_inline]
-        for k in shown:
-            date, left, right = source[k]
-            glyphs, names = d.label(source[k])
-            url = sticker_url(date, left, right)
-            if removed:
-                out.append(f"- {glyphs} — {names} · " + (f"last seen in batch {date}" if date else "sticker folder unknown"))
-                continue
-            if not url:
-                out.append(f"- {glyphs} — {names} · sticker image not found yet")
-                continue
-            thumb = f'<img src="{url}" width="40" alt=""> ' if thumbs else ""
-            batch = f"batch {d.prev[k][0]} → {date}" if redraw else f"batch {date}"
-            out.append(f"- {thumb}{glyphs} — {names} · {batch} · [png]({url})")
-        if len(shown) < len(keys):
-            more = f"… and {fmt(len(keys) - len(shown))} more — see the "
+        groups, printed, hidden = layout(keys, max_inline)
+        overview = overview_text(d, groups)
+        if overview:
+            out.append(f"**By emoji:** {overview}.")
+            out.append("")
+        for cp, members, shown in printed:
+            if overview:                      # otherwise everything is a singleton: plain list, no heading
+                out.append(f"### {group_heading(d, cp, members)}")
+                out.append("")
+            out.extend(line(k, source, cp, removed, redraw) for k in shown)
+            if len(shown) < len(members) and cp:
+                out.append(f"- … {fmt(len(members) - len(shown))} more with {glyph(cp)}")
+            out.append("")
+        if hidden:
+            more = f"… and {fmt(hidden)} more — see the "
             if report_url:
                 more += f"[full report]({report_url})"
             else:
                 more += "full report" + (f" (`{full_report}`)" if full_report else "")
             out.append(f"- {more}.")
-        out.append("")
+            out.append("")
 
     section("New combos", d.added, d.cur)
     section("Removed combos", d.removed, d.prev, removed=True)
@@ -491,36 +581,47 @@ def render_html(d: Diff, since: str | None, today: str, max_inline: int | None, 
     summary = esc(summary_text(d, since, today)).replace("**", "").replace("`", "")  # markdown markers -> plain
     css = ("body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#222;max-width:720px;margin:0 auto;padding:16px}"
            "h1{font-size:20px}h2{font-size:16px;margin-top:28px;border-bottom:1px solid #ddd;padding-bottom:4px}"
+           "h3{font-size:15px;margin:18px 0 4px}p.by{color:#555;font-size:13px}"
            "table{border-collapse:collapse}td{padding:6px 10px 6px 0;vertical-align:middle;font-size:14px}"
            "td.g{font-size:22px;white-space:nowrap}td.n{color:#555}td.b{color:#888;font-size:12px;white-space:nowrap}"
            "img{width:56px;height:56px;display:block}p.more{color:#555}p.foot{color:#888;font-size:12px;margin-top:32px}")
     out = [f"<!doctype html><html><head><meta charset='utf-8'><title>Emoji Kitchen changes — {today}</title><style>{css}</style></head><body>",
            f"<h1>Emoji Kitchen changes — {today}</h1>", f"<p><b>Summary:</b> {summary}</p>"]
 
+    def row(k: PairKey, source: dict[PairKey, Combo], lead: str | None, removed: bool, redraw: bool) -> str:
+        date, left, right = source[k]
+        glyphs, names = d.label(source[k], lead)
+        url = sticker_url(date, left, right)
+        img = f'<a href="{url}"><img src="{url}" alt=""></a>' if url and not removed else ""
+        if removed:
+            batch = f"last seen in batch {date}" if date else "sticker folder unknown"
+        elif not url:
+            batch = "sticker image not found yet"
+        elif redraw:
+            batch = f"batch {esc(d.prev[k][0])} → {date}"
+        else:
+            batch = f"batch {date}"
+        return f"<tr><td>{img}</td><td class='g'>{esc(glyphs)}</td><td class='n'>{esc(names)}</td><td class='b'>{batch}</td></tr>"
+
     def section(title: str, keys: list[PairKey], source: dict[PairKey, Combo], removed: bool = False, redraw: bool = False):
         out.append(f"<h2>{title} ({fmt(len(keys))})</h2>")
         if not keys:
             out.append("<p>None.</p>")
             return
-        shown = keys if max_inline is None else keys[:max_inline]
-        out.append("<table>")
-        for k in shown:
-            date, left, right = source[k]
-            glyphs, names = d.label(source[k])
-            url = sticker_url(date, left, right)
-            img = f'<a href="{url}"><img src="{url}" alt=""></a>' if url and not removed else ""
-            if removed:
-                batch = f"last seen in batch {date}" if date else "sticker folder unknown"
-            elif not url:
-                batch = "sticker image not found yet"
-            elif redraw:
-                batch = f"batch {esc(d.prev[k][0])} → {date}"
-            else:
-                batch = f"batch {date}"
-            out.append(f"<tr><td>{img}</td><td class='g'>{esc(glyphs)}</td><td class='n'>{esc(names)}</td><td class='b'>{batch}</td></tr>")
-        out.append("</table>")
-        if len(shown) < len(keys):
-            rest = f"… and {fmt(len(keys) - len(shown))} more — "
+        groups, printed, hidden = layout(keys, max_inline)
+        overview = overview_text(d, groups)
+        if overview:
+            out.append(f"<p class='by'><b>By emoji:</b> {esc(overview)}.</p>")
+        for cp, members, shown in printed:
+            if overview:
+                out.append(f"<h3>{esc(group_heading(d, cp, members))}</h3>")
+            out.append("<table>")
+            out.extend(row(k, source, cp, removed, redraw) for k in shown)
+            out.append("</table>")
+            if len(shown) < len(members) and cp:
+                out.append(f"<p class='more'>… {fmt(len(members) - len(shown))} more with {glyph(cp)}</p>")
+        if hidden:
+            rest = f"… and {fmt(hidden)} more — "
             if report_url:
                 rest += f"see the <a href='{esc(report_url)}'>full report</a> (also attached)"
             else:
