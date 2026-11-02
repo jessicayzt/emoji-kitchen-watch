@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "23 14 * * 1"   # Mondays 14:23 UTC (an off-the-hour minute avoids GitHub's busiest cron slots)
   workflow_dispatch:         # lets you run it by hand from the Actions tab
+    inputs:
+      sweep:
+        description: "Sticker folders (YYYYMMDD, comma-separated) to re-check every existing combo against, to find redrawn stickers"
+        required: false
+        default: ""
 
 permissions:
   contents: write            # commit the updated snapshot + report
@@ -16,7 +21,7 @@ concurrency:
 jobs:
   watch:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30      # a folder sweep makes two HEAD requests per combo (~300k) and can take a while
     env:
       # `secrets` can't be used in `if:` conditions, so mirror the one we test into env.
       SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
@@ -30,16 +35,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Download upstream metadata.json (~95 MB)
-        run: |
-          curl -sSL --compressed --retry 3 --retry-delay 15 \
-            -o metadata.json \
-            https://raw.githubusercontent.com/xsalazar/emoji-kitchen-backend/main/app/metadata.json
-          python -c "import json; json.load(open('metadata.json'))" || { echo "::error::metadata.json is not valid JSON"; exit 1; }
-
+      # Downloads Google's pair list (probing for a newer version first), diffs it against the snapshot,
+      # and locates the sticker PNG of every new combo on gstatic.com.
       - name: Diff against the previous snapshot
         id: diff
-        run: python watch.py metadata.json
+        run: python watch.py --sweep "${{ inputs.sweep }}"
 
       - name: Commit snapshot and report
         run: |

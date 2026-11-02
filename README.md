@@ -4,18 +4,26 @@ A weekly GitHub Action that emails you when Google adds, removes, or redraws
 combos in Gboard's **Emoji Kitchen**.
 
 Google publishes no changelog for Emoji Kitchen. The stickers are static PNGs on
-`gstatic.com`, and the only public inventory of them is the `metadata.json`
-that [emojikitchen.dev](https://emojikitchen.dev) rescans and commits to
-[`xsalazar/emoji-kitchen-backend`](https://github.com/xsalazar/emoji-kitchen-backend).
-That file is a 95 MB single-line JSON blob, so its git history tells you *that*
-something changed but not *what*. This repo fills the gap: it downloads the
-file every week, diffs it against the previous week's snapshot at the combo
-level, and sends a newsletter shaped like this:
+`gstatic.com`, but Google does publish the list of valid pairs that powers the
+"emoji kitchen" widget in Google Search:
+
+```
+https://www.google.com/logos/fnbx/emoji_kitchen/emoji_kitchen_pairs.<N>.pb
+```
+
+It is a small protobuf (about 260 KB) naming every supported emoji and every
+valid pair. Google replaces it with a new version number every few months and
+leaves the old ones online (v9 June 2025, v10 September 2025, v11 December
+2025, v12 March 2026, v13 September 2026). This repo downloads the newest
+version every week, diffs it against the previous week's snapshot at the combo
+level, looks up the sticker image of every new combo, and sends a newsletter
+shaped like this:
 
 ```
 Summary: Since the 2026-06-05 snapshot, Google's Emoji Kitchen gained 616 combos,
 dropped 4, and redrew 42 existing ones. It now offers 147,000 combos across 619
-emoji. Newly supported emoji: 🦨 skunk. Sticker batch: 20260128.
+emoji. Newly supported emoji: 🦨 skunk. Sticker batch: 20260128. Source: Google's
+pair list v13 (last modified Tue, 01 Sep 2026 19:30:00 GMT).
 
 New combos (616)
   🦨 + 🃏 — skunk + black joker · batch 20260128
@@ -34,15 +42,23 @@ Redrawn combos (42)
 The HTML email shows a thumbnail of every new/redrawn sticker (the images are
 served straight from Google). Nothing is sent when nothing changed.
 
+Until October 2026 this repo diffed the `metadata.json` that
+[emojikitchen.dev](https://emojikitchen.dev) hand-maintains. That file is
+rebuilt by brute-force scanning sticker folders its maintainer knows about, and
+it had silently missed three whole batches (July 2025, April 2026, July 2026:
+about 4,100 combos and two emoji, 🐘 and 🫏). Google's own pair list has no such
+gap, so the first run after switching reports that backlog as new.
+
 ## Files
 
 | Path | What it is |
 | --- | --- |
-| `watch.py` | The script. Standard library only. `python watch.py metadata.json` |
+| `watch.py` | The script. Standard library only. `python watch.py` |
+| `tests/test_watch.py` | Offline tests with a hand-built pair list: `python -m unittest discover -s tests` |
 | `.github/workflows/watch.yml` | Weekly schedule + manual trigger; downloads, diffs, commits, notifies |
-| `snapshot/combos.tsv` | Last known state: one line per combo (`date  left  right`, ~3 MB, sorted so each weekly commit is a readable diff) |
+| `snapshot/combos.tsv` | Last known state: one line per combo (`date  left  right`, ~3 MB, sorted so each weekly commit is a readable diff). `date` is the gstatic folder holding the sticker; empty until it has been located |
 | `snapshot/emoji.tsv` | Codepoint → name for every supported emoji (used to name combos that disappear) |
-| `snapshot/meta.json` | When the snapshot was taken, and its counts |
+| `snapshot/meta.json` | When the snapshot last changed, its counts, the pair-list version it came from, and every sticker folder seen so far |
 | `reports/YYYY-MM-DD.md` | Full, uncapped report for each week that had changes (permanent changelog) |
 | `out/` | The newsletter for the current run (Markdown + HTML); not committed |
 
@@ -50,7 +66,9 @@ served straight from Google). Nothing is sent when nothing changed.
 
 1. Create a repo from these files (private is best; see *Gotchas*).
 2. Push. Go to **Actions → Emoji Kitchen watch → Run workflow**. The first run
-   only records a baseline snapshot and commits it — no email yet.
+   only records a baseline snapshot and commits it — no email yet. (A fresh
+   baseline stores every combo without a sticker folder; folders are looked up
+   for combos added from then on.)
 3. Pick how you want to be notified (next section). Both can be on at once.
 
 To test the notification path end to end, delete any one line from
@@ -133,32 +151,52 @@ flow that forwards to email — can be wired in the same way, using
 
 ## How the diff works
 
-- A **combo** is an unordered pair of emoji codepoints. Google stores each
-  sticker under one ordering (`u1f31f_u1f951.png`), and `metadata.json` lists
-  it under both emoji; the script collapses that to one key per pair.
-- Google sometimes republishes an existing combo in a newer dated batch.
-  `metadata.json` keeps every revision with an `isLatest` flag; the snapshot
-  stores only the latest one per pair. A pair whose latest batch date changed
-  is reported as **redrawn**; it is *not* counted as new.
-- **New** = pair present now, absent last week. **Removed** = the reverse —
-  Google deleted the PNGs and emojikitchen.dev pruned them. Pruning of *old*
-  revisions of a pair that still exists is ignored as noise.
+- **The pair list.** `watch.py` remembers the version number it last saw
+  (`source_version` in `snapshot/meta.json`) and probes upward from it until
+  three consecutive versions are missing, then uses the newest one found. The
+  file is decoded without any protobuf library; the schema is three repeated
+  messages: emoji (string + id), pairings (id + packed partner ids), and
+  categories (name + first emoji id).
+- A **combo** is an unordered pair of emoji codepoints. **New** = pair present
+  now, absent last week. **Removed** = the reverse: Google took it out of the
+  list, and in the cases checked so far the PNG disappears too.
 - The summary also calls out emoji that gained or lost Emoji Kitchen support
-  entirely.
-- Upstream is refreshed by its maintainer roughly every one to three months,
-  so most weeks the run finishes with "No changes" and sends nothing.
+  entirely. New emoji are named from the Unicode database (`🐘` → `elephant`);
+  names from the old emojikitchen.dev data are kept for everything else.
+- **Sticker images.** The pair list says nothing about where a sticker lives.
+  Google stores each one under one codepoint order (`u1f31f_u1f951.png`) in a
+  folder named after its publish date, so for every *new* combo the script
+  sends HEAD requests for both orders to each known folder, newest first, until
+  one answers 200. Folders are remembered in `meta.json`; if a combo is in none
+  of them, the script probes day-named folders between the newest known folder
+  and today to discover the new one, then tries again. Combos whose image still
+  cannot be found are listed without a thumbnail and retried the next week.
+- **Redrawn** combos (Google republishing an existing sticker in a newer folder)
+  are detected only when you ask for a **sweep**: run the workflow by hand with
+  the `sweep` input set to one or more folders (`20260728,20260428`), or locally
+  `python watch.py --sweep 20260728`. A sweep makes two HEAD requests per combo
+  per folder (about 300,000 for the full catalogue), which is why it is not
+  part of the weekly run. The newsletter tells you when a new folder appeared,
+  so you know when a sweep is worth running. After switching from emojikitchen.dev
+  the folders `20250728`, `20260428` and `20260728` have never been swept.
+- Google refreshes the pair list every three to six months, so most weeks the
+  run finishes with "No changes" and sends nothing.
 
 ## Gotchas
 
 - **Scheduled workflows in public repos are switched off after 60 days without
-  repository activity.** Upstream data can go quiet for longer than that, so
+  repository activity.** Google's data can go quiet for longer than that, so
   keep this repo **private** (the rule doesn't apply there) or expect to
   re-enable the workflow occasionally.
+- The pair-list URL is an undocumented static asset of the Google Search
+  widget. It has been stable since at least 2023 (an unversioned
+  `emoji_kitchen_pairs.pb` from July 2023 is still online), but if Google moves
+  or renames it the run fails loudly ("No pair list found") rather than
+  silently reporting "no changes". The pair list also trails the image server:
+  the April 2026 stickers only appeared in it in September 2026.
 - Cron runs in UTC and GitHub may delay it by some minutes on busy days; the
   exact hour doesn't matter here.
 - The commit step needs push access to the default branch; if you protect the
   branch, allow the `github-actions[bot]` to bypass or push to a side branch.
 - Issue bodies are limited to 65,536 characters, which is why the newsletter is
   capped and the full list lives in `reports/`.
-- If emojikitchen.dev ever moves or renames `metadata.json`, the download
-  step fails loudly rather than silently reporting "no changes".
