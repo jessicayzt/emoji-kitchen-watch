@@ -42,7 +42,7 @@ Redrawn combos (42)
 The HTML email shows a thumbnail of every new/redrawn sticker (the images are
 served straight from Google). Nothing is sent when nothing changed.
 
-Until October 2026 this repo diffed the `metadata.json` that
+Until November 2026 this repo diffed the `metadata.json` that
 [emojikitchen.dev](https://emojikitchen.dev) hand-maintains. That file is
 rebuilt by brute-force scanning sticker folders its maintainer knows about, and
 it had silently missed three whole batches (July 2025, April 2026, July 2026:
